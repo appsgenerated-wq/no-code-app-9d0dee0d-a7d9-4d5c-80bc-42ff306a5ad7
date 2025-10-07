@@ -1,0 +1,130 @@
+name: LunarEats
+
+entities:
+  User:
+    authenticable: true
+    properties:
+      - name
+      - name: email
+        type: email
+      - name: role
+        type: choice
+        options:
+          values: [customer, admin]
+        default: customer
+      - name: profilePicture
+        type: image
+        options:
+          sizes:
+            thumbnail:
+              width: 100
+              height: 100
+    policies:
+      signup:
+        - access: public
+      create:
+        - access: admin
+      read:
+        - access: restricted
+          allow: User
+          condition: self
+        - access: admin
+      update:
+        - access: restricted
+          allow: User
+          condition: self
+        - access: admin
+      delete:
+        - access: admin
+
+  Restaurant:
+    properties:
+      - name
+      - name: description
+        type: text
+      - name: logo
+        type: image
+        options:
+          sizes:
+            thumbnail:
+              width: 200
+              height: 200
+    policies:
+      create:
+        - access: admin
+      read:
+        - access: public
+      update:
+        - access: admin
+      delete:
+        - access: admin
+
+  MenuItem:
+    properties:
+      - name
+      - name: description
+        type: text
+      - name: price
+        type: money
+        options:
+          currency: 'USD'
+      - name: photo
+        type: image
+        options:
+          sizes:
+            small:
+              width: 150
+              height: 150
+    belongsTo:
+      - name: restaurant
+        entity: Restaurant
+    policies:
+      create:
+        - access: admin
+      read:
+        - access: public
+      update:
+        - access: admin
+      delete:
+        - access: admin
+
+  Order:
+    properties:
+      - name: deliveryCrater
+        type: string
+      - name: totalPrice
+        type: money
+        options:
+          currency: 'USD'
+      - name: status
+        type: choice
+        options:
+          values: [pending, preparing, in_transit, delivered]
+        default: pending
+    belongsTo:
+      - name: customer
+        entity: User
+      - name: restaurant
+        entity: Restaurant
+    policies:
+      create:
+        - access: restricted
+          allow: User
+      read:
+        - access: restricted
+          allow: User
+          condition: self
+        - access: admin
+      update:
+        - access: admin
+      delete:
+        - access: admin
+
+
+# Health check endpoint for connection testing
+endpoints:
+  health:
+    path: /api/health
+    method: GET
+    policies: []
+    handler: healthCheck
